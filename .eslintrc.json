@@ -1,0 +1,40 @@
+{
+  "parser": "babel-eslint",
+  "parserOptions": {
+    "ecmaVersion": 2017
+  },
+  "env": {
+    "node": true,
+    "es6": true
+  },
+  "rules" : {
+    "quotes": [1, "single", {"avoidEscape": true}],
+    "semi": [1, "always"],
+    "indent": [1, 2, {"SwitchCase": 1}],
+    "eqeqeq": [2, "smart"],
+    "no-multi-str": 1,
+    "max-depth":[1, 5],
+    "camelcase": [1, {"properties": "always"}],
+    "max-statements": [1, 35, {"ignoreTopLevelFunctions": true}],
+    "semi-spacing": [1, {"before": false, "after": true}],
+    "space-before-blocks": [1, "always"],
+    "no-trailing-spaces": 2,
+    "no-mixed-spaces-and-tabs": [2, "smart-tabs"],
+    "max-len": [2, 120, 4, {"ignoreUrls": true, "ignoreComments": true}],
+    "curly": [2, "all"],
+    "new-cap": 1,
+    "no-eval": 2,
+    "no-empty": 2,
+    "brace-style": ["warn", "1tbs", { "allowSingleLine": true }],
+    "no-multiple-empty-lines": "error",
+    "padded-blocks": [2, "never"],
+    "dot-notation": 2,
+    "operator-linebreak": [2, "after"],
+    "keyword-spacing": [1, { "overrides": {
+      "else": { "before": true },
+      "while": { "before": true },
+      "catch": { "before": true }
+    }}],
+    "linebreak-style": [2, "unix"]
+  }
+}
