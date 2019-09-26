@@ -29,11 +29,17 @@ async function run() {
   const creditCheck = await payapiClient.creditCheck(ssn, 1200, 'FI');
   console.info(creditCheck);
 
+  const tupasUrl = await payapiClient.getTupasUrl('http://staging-facepay.payapi.io/tupas/return', 'sessionId-x1582s');
+  console.info(tupasUrl);
+
   process.exit(0);
 }
 
 run()
   .catch(err => {
     console.error(err);
+    console.error(err.error);
+    console.error(err.statusCode);
+    console.error(err.message)
     process.exit(1);
   })

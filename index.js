@@ -5,7 +5,8 @@ const jwt = require('jwt-simple');
 const validator = require('validator');
 
 const debug = require('debug')('payapi-api-client');
-const stagUrl = 'https://staging-input.payapi.io';
+//const stagUrl = 'https://staging-input.payapi.io';
+const stagUrl = 'http://localhost:3000';
 const prodUrl = 'https://input.payapi.io';
 
 module.exports = function PayapiApiClient(config) {
@@ -43,6 +44,7 @@ module.exports = function PayapiApiClient(config) {
     const rpOptions = {
       method: 'POST',
       json: true,
+      timeout: 10000,
       uri: apiUrl + '/v1/api/auth/login',
       body: {
         key: config.apiKey,
@@ -69,6 +71,7 @@ module.exports = function PayapiApiClient(config) {
     const rpOptions = {
       method: 'POST',
       json: true,
+      timeout: 10000,
       uri: apiUrl + '/v1/api/authorized/fraud/check/' + params.ip,
       body: body
     };
@@ -96,6 +99,7 @@ module.exports = function PayapiApiClient(config) {
     const rpOptions = {
       method: 'POST',
       json: true,
+      timeout: 10000,
       uri: apiUrl + '/v1/api/authorized/creditcheck',
       body: {
         ssn: ssn,
@@ -109,11 +113,39 @@ module.exports = function PayapiApiClient(config) {
     return await rp(rpOptions);
   }
 
+  async function getTupasUrl(redirectUrl, sessionId) {
+    if (!config.authenticationToken) {
+      throw new Error('You must authenticate first');
+    }
+    if (!redirectUrl || !validator.isURL(redirectUrl)) {
+      throw new Error('Validation: redirectUrl must be a valid http/https URL');
+    }
+    if (sessionId && sessionId.length > 256) {
+      throw new Error('Validation: sessionId is too large (max 256 characters)');
+    }
+
+    const url = apiUrl + '/v1/api/authorized/signicat/' + encodeURIComponent(redirectUrl);
+    const rpOptions = {
+      uri: url,
+      timeout: 10000,
+      qs: {
+        sessionId: sessionId
+      },
+      headers: {
+        'authorization': 'Bearer ' + config.authenticationToken
+      },
+      json: true
+    };
+
+    return await rp(rpOptions);
+  }
+
   return {
     apiUrl,
     authenticate,
     creditCheck,
     fraudCheck,
-    generateAccessToken
+    generateAccessToken,
+    getTupasUrl
   };
 };
