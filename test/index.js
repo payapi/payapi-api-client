@@ -53,17 +53,4 @@ describe('PayapiApiClient', function() {
       expect(new PayapiApiClient(params).apiUrl).to.equal('https://input.payapi.io');
     });
   })
-
-  describe('authenticate', () => {
-    it('should return something', function() {
-      expect(new PayapiApiClient(params).authenticate())
-        .to.equal('Hey, I returned something');
-    });
-
-  });
-
-  describe('asynchronous method doSomethingAsync', () => {
-
-
-  });
 });

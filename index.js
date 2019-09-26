@@ -5,8 +5,7 @@ const jwt = require('jwt-simple');
 const validator = require('validator');
 
 const debug = require('debug')('payapi-api-client');
-//const stagUrl = 'https://staging-input.payapi.io';
-const stagUrl = 'http://localhost:3000'
+const stagUrl = 'https://staging-input.payapi.io';
 const prodUrl = 'https://input.payapi.io';
 
 module.exports = function PayapiApiClient(config) {
