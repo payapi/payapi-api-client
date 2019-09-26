@@ -9,107 +9,61 @@ const sinonChai = require('sinon-chai');
 chai.use(sinonChai);
 chai.use(chaiAsPromised);
 var PayapiApiClient = require('../index');
-var log = {
-  audit: function(text) {
-    console.log(text);
-  }
-};
-var params = {
-  log: log,
-  client: sinon.spy()
-};
 
-beforeEach(function() {
-  sinon.spy(log, 'audit');
+let params;
+
+beforeEach(() => {
+  params = {
+    secret: 'test-secret',
+    apiKey: 'test-apikey',
+    password: 'password-test',
+    isProd: false
+  };
 });
 
 afterEach(function() {
-  log.audit.restore();
+
 });
 
 describe('PayapiApiClient', function() {
-  describe('synchronous methods', () => {
+
+  describe('constructor', () => {
+    it('Should return an error when apiKey is missing', () => {
+      delete params.apiKey;
+      expect(() => new PayapiApiClient(params)).to.throw(Error, /apiKey/);
+    });
+    it('Should return an error when secret is missing', () => {
+      delete params.secret;
+      expect(() => new PayapiApiClient(params)).to.throw(Error, /secret/);
+    });
+    it('Should return an error when password is missing', () => {
+      delete params.password;
+      expect(() => new PayapiApiClient(params)).to.throw(Error, /password/);
+    });
+    it('Should return an error when isProd is not a valid boolean', () => {
+      params.isProd = 'true';
+      expect(() => new PayapiApiClient(params)).to.throw('Configuration: isProd must be a boolean');
+    });
+    it('Should use Staging apiUrl when isProd is disabled', () => {
+      params.isProd = false;
+      expect(new PayapiApiClient(params).apiUrl).to.equal('https://staging-input.payapi.io');
+    });
+    it('Should use Production apiUrl when isProd is boolean:false', () => {
+      params.isProd = true;
+      expect(new PayapiApiClient(params).apiUrl).to.equal('https://input.payapi.io');
+    });
+  })
+
+  describe('authenticate', () => {
     it('should return something', function() {
-      expect(
-        new PayapiApiClient(params).returnSomething()
-      ).to.equal('Hey, I returned something');
+      expect(new PayapiApiClient(params).authenticate())
+        .to.equal('Hey, I returned something');
     });
-    it('should log something', function() {
-      new PayapiApiClient(params).touchSomething();
-      expect(log.audit).to.be.called;
-    });
-    it('should throw something', function() {
-      // Note, when testing if a method throws something,
-      // it needs to be wrapped in an anonymous function.
-      // You can use regexp to check that the error
-      // message is something expected.
-      expect(() => {
-        new PayapiApiClient(params).throwSomething();
-      }).to.throw(Error, /something/);
-    });
-    it('should use function parameters', function() {
-      expect(
-        new PayapiApiClient(params).useFunctionParameters('Heya')
-      ).to.equal('Heya');
-    });
-    it('should call something with an object', function() {
-      new PayapiApiClient(params).callingUsingAnObject('bar');
-      return expect(params.client).to.have.been.calledWithMatch({
-        foo: 'bar',
-        message: sinon.match(/diiba/)
-      });
-    });
+
   });
 
   describe('asynchronous method doSomethingAsync', () => {
-    it('should have mandatory parameter bar', done => {
-      new PayapiApiClient(params).doSomethingAsync({foo: 'foo'})
-        .then(response => {
-          expect(response).to.not.exist;
-          done();
-        })
-        .catch(err => {
-          expect(err.message).to.match(/missing parameter/);
-          expect(err.message).to.match(/bar/);
-          done();
-        });
-    });
-    it('should have mandatory parameter foo', done => {
-      new PayapiApiClient(params).doSomethingAsync({bar: 'bar'})
-        .then(response => {
-          expect(response).to.not.exist;
-          done();
-        })
-        .catch(err => {
-          expect(err.message).to.match(/missing parameter/);
-          expect(err.message).to.match(/foo/);
-          done();
-        });
-    });
-    it('should have mandatory parameter', done => {
-      new PayapiApiClient(params).doSomethingAsync({})
-        .then(response => {
-          expect(response).to.not.exist;
-          done();
-        })
-        .catch(err => {
-          expect(err.message).to.match(/missing parameter/);
-          done();
-        });
-    });
-    it('should work well with all mandatory parameters', done => {
-      new PayapiApiClient(params).doSomethingAsync({foo: 'foo', bar: 'bar'})
-        .then(response => {
-          expect(response).to.deep.equal({
-            foo: 'foo',
-            bar: 'bar'
-          });
-          done();
-        })
-        .catch(err => {
-          expect(err.message).to.not.exist;
-          done();
-        });
-    });
+
+
   });
 });
