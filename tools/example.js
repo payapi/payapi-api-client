@@ -21,7 +21,7 @@ async function run() {
     email: 'example@example.com',
     bin: '',
     shippingCountryCode: 'FI'
-  }
+  };
   const fraudCheck = await payapiClient.fraudCheck(fraudCheckParams);
   console.info(fraudCheck);
 
@@ -29,7 +29,7 @@ async function run() {
   const creditCheck = await payapiClient.creditCheck(ssn, 1200, 'FI');
   console.info(creditCheck);
 
-  const tupasUrl = await payapiClient.getTupasUrl('http://staging-facepay.payapi.io/tupas/return', 'sessionId-x1582s');
+  const tupasUrl = await payapiClient.getTupasUrl('http://staging-facepay.payapi.io', 'sessionId-x1582s');
   console.info(tupasUrl);
 
   process.exit(0);
@@ -38,8 +38,5 @@ async function run() {
 run()
   .catch(err => {
     console.error(err);
-    console.error(err.error);
-    console.error(err.statusCode);
-    console.error(err.message)
     process.exit(1);
   })
