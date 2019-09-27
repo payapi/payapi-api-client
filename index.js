@@ -18,7 +18,7 @@ function formatAxiosResponse(response) {
   } else if (response.status === 404) {
     throw new Error('Resource not found');
   } else if (response.status >= 400 && response.status < 500) {
-    throw new Error(response.data);
+    throw new Error(response.data.error || response.data);
   } else {
     throw new Error('Unexpected status code received.');
   }
@@ -122,21 +122,20 @@ module.exports = function PayapiApiClient(config) {
       throw new Error('Validation: consumerNumber must be a valid autoincremental number');
     }
 
-    const axiosOptions = {
-      method: 'post',
+    const url = apiUrl + '/v1/api/authorized/creditcheck';
+    const data = {
+      ssn: ssn,
+      amount: amount,
+      authenticationToken: { token: config.authenticationToken },
+      countryCode: countryCode,
+      consumerNumber: consumerNumber
+    }
+    const options = {
       timeout: 10000,
-      url: apiUrl + '/v1/api/authorized/creditcheck',
-      data: {
-        ssn: ssn,
-        amount: amount,
-        authenticationToken: { token: config.authenticationToken },
-        countryCode: countryCode,
-        consumerNumber: consumerNumber
-      },
       validateStatus: status => status >= 200 && status <= 503
     };
 
-    const response = await axios(axiosOptions);
+    const response = await axios.post(url, data, options);
 
     return formatAxiosResponse(response);
   }
@@ -171,6 +170,7 @@ module.exports = function PayapiApiClient(config) {
   return {
     apiUrl,
     authenticate,
+    config,
     creditCheck,
     fraudCheck,
     generateAccessToken,
