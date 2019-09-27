@@ -104,6 +104,22 @@ describe('PayapiApiClient', function() {
         .to.be.rejectedWith(Error, /You must do the authentication first/);
 
     });
+
+    it('Should fail if ssn is not a valid social security number', async () => {
+      await expect(payapiApiClient.creditCheck('234', 1100, 'FI'))
+        .to.be.rejectedWith(Error, /Validation: ssn must be a valid social security number/);
+
+    });
+    it('Should fail if country code is not a valid ISO alpha-2', async () => {
+      await expect(payapiApiClient.creditCheck('83123414291', 1100, 'FIN'))
+        .to.be.rejectedWith(Error, /Validation: countryCode must be a valid ISO alpha-2 code/);
+
+    });
+    it('Should fail if consumerNumber is not valid autoincremental number', async () => {
+      await expect(payapiApiClient.creditCheck('83123414291', 1100, 'FI', -15))
+        .to.be.rejectedWith(Error, /Validation: consumerNumber must be a valid autoincremental number/);
+    });
+
     it('Should return a Unauthorized error if authentication failed', async () => {
       sinon.stub(axios, 'post')
         .returns({ status: 412, data: { error: 'Credit check amount must be a positive number' } });
@@ -111,11 +127,14 @@ describe('PayapiApiClient', function() {
       await expect(payapiApiClient.creditCheck('10102403231', 1100, 'FI'))
         .to.be.rejectedWith(Error, /Credit check amount must be a positive number/);
     });
-    it('Should return Unexpected status code received if http status returned is 503', () => {
+    it('Should return Unexpected status code received if http status returned is 503', async () => {
       sinon.stub(axios, 'post').returns({ status: 503 });
 
-      expect(payapiApiClient.creditCheck('10102403231', 1100, 'FI'))
+      await expect(payapiApiClient.creditCheck('10102403231', 1100, 'FI'))
         .to.be.rejectedWith(Error, /Unexpected status code received/);
     });
   });
+
+
+
 });

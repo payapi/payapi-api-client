@@ -109,7 +109,7 @@ module.exports = function PayapiApiClient(config) {
     if (!config.authenticationToken) {
       throw new Error('You must do the authentication first');
     }
-    if (!ssn) {
+    if (!ssn || ssn.length < 8) {
       throw new Error('Validation: ssn must be a valid social security number');
     }
     if (!amount || isNaN(amount) || amount <= 0) {
@@ -118,7 +118,7 @@ module.exports = function PayapiApiClient(config) {
     if (!countryCode || !validator.isISO31661Alpha2(countryCode)) {
       throw new Error('Validation: countryCode must be a valid ISO alpha-2 code');
     }
-    if (!consumerNumber || isNaN(consumerNumber)) {
+    if (!consumerNumber || isNaN(consumerNumber) || consumerNumber < 1) {
       throw new Error('Validation: consumerNumber must be a valid autoincremental number');
     }
 
