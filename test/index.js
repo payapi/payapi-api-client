@@ -99,14 +99,13 @@ describe('PayapiApiClient', function() {
       expect(result).to.have.property('message', 'Credit check passed successfully');
     });
     it('Should return a Unauthorized error if authentication failed', async () => {
-      sinon.stub(axios, 'post').returns({ status: 412, data: { error: 'Credit check amount must be a positive number' } });
-      const result = await payapiApiClient.creditCheck('10102403231', 1100, 'FI');
+      sinon.stub(axios, 'post')
+        .returns({ status: 412, data: { error: 'Credit check amount must be a positive number' } });
 
       await expect(payapiApiClient.creditCheck('10102403231', 1100, 'FI'))
         .to.be.rejectedWith(Error, /Credit check amount must be a positive number/);
     });
-
-    it.skip('Should return Unexpected status code received if http status returned is 503', () => {
+    it('Should return Unexpected status code received if http status returned is 503', () => {
       sinon.stub(axios, 'post').returns({ status: 503 });
 
       expect(payapiApiClient.creditCheck('10102403231', 1100, 'FI'))
