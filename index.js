@@ -64,18 +64,17 @@ module.exports = function PayapiApiClient(config) {
   async function authenticate() {
     const token = generateAccessToken();
 
-    const axiosOptions = {
-      method: 'post',
+    const data = {
+      key: config.apiKey,
+      token: token
+    };
+    const options = {
       timeout: 10000,
-      url: apiUrl + '/v1/api/auth/login',
-      data: {
-        key: config.apiKey,
-        token: token
-      },
       validateStatus: status => status >= 200 && status <= 503
     };
 
-    const response = await axios(axiosOptions);
+    const response = await axios.post(apiUrl + '/v1/api/auth/login', data, options);
+
     if (response.status === 200) {
       config.authenticationToken = response.data.token;
     }

@@ -6,6 +6,7 @@ const chaiAsPromised = require('chai-as-promised');
 const expect = chai.expect;
 const sinon = require('sinon');
 const sinonChai = require('sinon-chai');
+const axios = require('axios');
 chai.use(sinonChai);
 chai.use(chaiAsPromised);
 var PayapiApiClient = require('../index');
@@ -22,13 +23,11 @@ beforeEach(() => {
   };
 });
 
-afterEach(function() {
-
-});
+afterEach(() => sinon.restore());
 
 describe('PayapiApiClient', function() {
 
-  describe('constructor', () => {
+  describe('Constructor', () => {
     it('Should return an error when apiKey is missing', () => {
       delete params.apiKey;
       expect(() => new PayapiApiClient(params)).to.throw(Error, /apiKey/);
@@ -58,4 +57,28 @@ describe('PayapiApiClient', function() {
       expect(new PayapiApiClient(params).apiUrl).to.equal('https://input.payapi.io');
     });
   })
+
+  describe.skip('Generate access token', () => {
+
+  });
+
+  describe('Authenticate', () => {
+    it('Should authenticate and return access token', async () => {
+      sinon.stub(axios, 'post').returns({ status: 200, data: { token: 'encodedToken' }});
+      const result = await new PayapiApiClient(params).authenticate();
+
+      expect(result).to.have.property('token', 'encodedToken');
+    });
+    it('Should return a Unauthorized error if authentication failed', async () => {
+      sinon.stub(axios, 'post').returns({ status: 401, data: { error: 'Unauthorized' } });
+
+      expect(new PayapiApiClient(params).authenticate()).to.be.rejectedWith(Error, /Unauthorized/ );
+    });
+
+    it('Should return a generic error if authentication failed for unknown reason', async () => {
+      sinon.stub(axios, 'post').returns({ status: 504 });
+
+      expect(new PayapiApiClient(params).authenticate()).to.be.rejectedWith(Error);
+    });
+  });
 });
