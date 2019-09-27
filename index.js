@@ -142,24 +142,18 @@ module.exports = function PayapiApiClient(config) {
     return formatAxiosResponse(response);
   }
 
-  async function getTupasUrl(redirectUrl, sessionId) {
+  async function getTupasUrl(redirectUrl) {
     if (!config.authenticationToken) {
       throw new Error('You must authenticate first');
     }
     if (!redirectUrl || !validator.isURL(redirectUrl)) {
       throw new Error('Validation: redirectUrl must be a valid http/https URL');
     }
-    if (sessionId && sessionId.length > 256) {
-      throw new Error('Validation: sessionId is too large (max 256 characters)');
-    }
 
     const url = apiUrl + '/v1/api/authorized/signicat/' + config.publicId + '/' + encodeURIComponent(redirectUrl);
     const axiosOptions = {
       url: url,
       timeout: 10000,
-      params: {
-        sessionId: sessionId
-      },
       headers: {
         'Authorization': 'Bearer ' + config.authenticationToken
       },
