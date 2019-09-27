@@ -36,6 +36,9 @@ module.exports = function PayapiApiClient(config) {
   if (!config.apiKey) {
     throw new Error('Configuration: apiKey is mandatory');
   }
+  if (!config.publicId) {
+    throw new Error('Configuration: publicId is mandatory');
+  }
   if (!config.secret) {
     throw new Error('Configuration: secret is mandatory');
   }
@@ -150,7 +153,7 @@ module.exports = function PayapiApiClient(config) {
       throw new Error('Validation: sessionId is too large (max 256 characters)');
     }
 
-    const url = apiUrl + '/v1/api/authorized/signicat/' + encodeURIComponent(redirectUrl);
+    const url = apiUrl + '/v1/api/authorized/signicat/' + config.publicId + '/' + encodeURIComponent(redirectUrl);
     const axiosOptions = {
       url: url,
       timeout: 10000,

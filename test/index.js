@@ -17,6 +17,7 @@ beforeEach(() => {
     secret: 'test-secret',
     apiKey: 'test-apikey',
     password: 'password-test',
+    publicId: 'test',
     isProd: false
   };
 });
@@ -35,6 +36,10 @@ describe('PayapiApiClient', function() {
     it('Should return an error when secret is missing', () => {
       delete params.secret;
       expect(() => new PayapiApiClient(params)).to.throw(Error, /secret/);
+    });
+    it('Should return an error when publicId is missing', () => {
+      delete params.publicId;
+      expect(() => new PayapiApiClient(params)).to.throw(Error, /publicId/);
     });
     it('Should return an error when password is missing', () => {
       delete params.password;
