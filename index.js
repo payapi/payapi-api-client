@@ -51,6 +51,12 @@ module.exports = function PayapiApiClient(config) {
     apiUrl = config.devUrl;
   }
 
+  function checkAuthentication() {
+    if (!config.authenticationToken) {
+      throw new Error('You must do the authentication first');
+    }
+  }
+
   function generateAccessToken() {
     const payload = {
       apiKey: {
@@ -83,9 +89,6 @@ module.exports = function PayapiApiClient(config) {
   }
 
   async function fraudCheck(params) {
-    if (!config.authenticationToken) {
-      throw new Error('You must authenticate first');
-    }
     if (!params.ip) {
       throw new Error('Validation: ip is mandatory');
     }
@@ -106,9 +109,8 @@ module.exports = function PayapiApiClient(config) {
   }
 
   async function creditCheck(ssn, amount, countryCode = 'FI', consumerNumber = 1) {
-    if (!config.authenticationToken) {
-      throw new Error('You must do the authentication first');
-    }
+    checkAuthentication();
+
     if (!ssn || ssn.length < 8) {
       throw new Error('Validation: ssn must be a valid social security number');
     }
@@ -141,19 +143,17 @@ module.exports = function PayapiApiClient(config) {
   }
 
   async function getTupasUrl(redirectUrl, sessionId) {
-    if (!config.authenticationToken) {
-      throw new Error('You must authenticate first');
-    }
+    checkAuthentication();
+
     if (!redirectUrl || !validator.isURL(redirectUrl)) {
-      throw new Error('Validation: redirectUrl must be a valid http/https URL');
+      throw new Error('Validation: redirectUrl must be a valid URL');
     }
     if (sessionId && sessionId.length > 128) {
       throw new Error('Validation: sessionId is too large (max 128 characters)');
     }
 
     const url = apiUrl + '/v1/api/authorized/signicat/' + config.publicId + '/' + encodeURIComponent(redirectUrl);
-    const axiosOptions = {
-      url: url,
+    const options = {
       timeout: 10000,
       params: { sessionId },
       headers: {
@@ -162,7 +162,7 @@ module.exports = function PayapiApiClient(config) {
       validateStatus: status => status >= 200 && status <= 503
     };
 
-    const response = await axios(axiosOptions);
+    const response = await axios.get(url, options);
 
     return formatAxiosResponse(response);
   }

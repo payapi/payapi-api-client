@@ -7,6 +7,7 @@ const expect = chai.expect;
 const sinon = require('sinon');
 const sinonChai = require('sinon-chai');
 const axios = require('axios');
+const validator = require('validator');
 chai.use(sinonChai);
 chai.use(chaiAsPromised);
 var PayapiApiClient = require('../index');
@@ -132,6 +133,50 @@ describe('PayapiApiClient', function() {
 
       await expect(payapiApiClient.creditCheck('10102403231', 1100, 'FI'))
         .to.be.rejectedWith(Error, /Unexpected status code received/);
+    });
+  });
+
+  describe('Get Tupas URL', () => {
+    let payapiApiClient;
+
+    before(async function() {
+      sinon.stub(axios, 'post').returns({ status: 200, data: { token: 'encodedToken' } });
+      payapiApiClient = new PayapiApiClient(params);
+      await payapiApiClient.authenticate();
+      sinon.restore();
+    });
+
+    it('Should success and return a valid URL', async () => {
+      sinon.stub(axios, 'get').returns({ status: 200, data: { signicatUrl: 'https://example.com' } });
+      const result = await payapiApiClient.getTupasUrl('https://example.com/redirect', 'sessionId-sj3j4');
+
+      expect(validator.isURL(result.signicatUrl)).to.equal(true);
+      expect(result).to.have.property('signicatUrl', 'https://example.com');
+    });
+
+    it('Should fail if not authenticated', async () => {
+      await expect(new PayapiApiClient(params).getTupasUrl('https://example.com', 'sessionId'))
+        .to.be.rejectedWith(Error, /You must do the authentication first/);
+    });
+
+    it('Should success and return a valid URL', async () => {
+      sinon.stub(axios, 'get').returns({ status: 200, data: { signicatUrl: 'https://example.com' } });
+      const result = await payapiApiClient.getTupasUrl('https://example.com/redirect', 'sessionId-sj3j4');
+
+      expect(validator.isURL(result.signicatUrl)).to.equal(true);
+      expect(result).to.have.property('signicatUrl', 'https://example.com');
+    });
+
+    it('Should fail if return url is not a valid http/https URL', async () => {
+      await expect(payapiApiClient.getTupasUrl('httpa://example.com', 'testsession'))
+        .to.be.rejectedWith(Error, /Validation: redirectUrl must be a valid URL/);
+    });
+
+    it('Should fail if sessionId has more than 128 characters', async () => {
+      const sessionId = 'AgMCAgIDAwMDBAYEBAQEBAgGBgUGCQgKCgkICQkKDA8MCgsOCwkJDRENDg8QEBEQCgwSExIQEw8QEBD/2wBDAQ' +
+        'DAwQDBAgEBAgQEBAgGBgUGCQgKCgkICQkKDA8MCgsOCwk';
+      await expect(payapiApiClient.getTupasUrl('http://example.com', sessionId))
+        .to.be.rejectedWith(Error, /Validation: sessionId is too large/);
     });
   });
 
