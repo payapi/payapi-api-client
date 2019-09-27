@@ -11,7 +11,8 @@ async function run() {
   const payapiClient = new PayapiClient({
     apiKey: process.env.API_KEY,
     password: process.env.PASSWORD,
-    secret: process.env.SECRET
+    secret: process.env.SECRET,
+    devUrl: 'http://localhost:3000'
   });
   const response = await payapiClient.authenticate();
   console.log('Authenticated successfully');
@@ -37,6 +38,8 @@ async function run() {
 
 run()
   .catch(err => {
+
     console.error(err);
+
     process.exit(1);
   })

@@ -14,10 +14,10 @@
   "author": "PayApi DevTeam <devteam@payapi.io> (https://payapi.io/)",
   "license": "Apache-2.0",
   "dependencies": {
+    "axios": "^0.19.0",
     "debug": "4.1.1",
     "jwt-simple": "0.5.6",
     "request": "2.88.0",
-    "request-promise": "4.2.4",
     "validator": "11.1.0"
   },
   "devDependencies": {

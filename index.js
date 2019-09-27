@@ -1,6 +1,6 @@
 'use strict';
 
-const rp = require('request-promise');
+const axios = require('axios');
 const jwt = require('jwt-simple');
 const validator = require('validator');
 
@@ -8,8 +8,24 @@ const debug = require('debug')('payapi-api-client');
 const stagUrl = 'https://staging-input.payapi.io';
 const prodUrl = 'https://input.payapi.io';
 
+function formatAxiosResponse(response) {
+  if (response.status === 200) {
+    return response.data;
+  } else if (response.status === 401) {
+    throw new Error('Unauthorized');
+  } else if (response.status === 403) {
+    throw new Error('Access denied');
+  } else if (response.status === 404) {
+    throw new Error('Resource not found');
+  } else if (response.status >= 400 && response.status < 500) {
+    throw new Error(response.data);
+  } else {
+    throw new Error('Unexpected status code received.');
+  }
+}
+
 module.exports = function PayapiApiClient(config) {
-  const apiUrl = config.isProd ? prodUrl : stagUrl;
+  let apiUrl = config.isProd ? prodUrl : stagUrl;
 
   if (!config) {
     throw new Error('Configuration: missing params params');
@@ -27,6 +43,11 @@ module.exports = function PayapiApiClient(config) {
     throw new Error('Configuration: password is mandatory');
   }
 
+  // Allow development environment
+  if (config.devUrl) {
+    apiUrl = config.devUrl;
+  }
+
   function generateAccessToken() {
     const payload = {
       apiKey: {
@@ -40,21 +61,23 @@ module.exports = function PayapiApiClient(config) {
   async function authenticate() {
     const token = generateAccessToken();
 
-    const rpOptions = {
-      method: 'POST',
-      json: true,
+    const axiosOptions = {
+      method: 'post',
       timeout: 10000,
-      uri: apiUrl + '/v1/api/auth/login',
-      body: {
+      url: apiUrl + '/v1/api/auth/login',
+      data: {
         key: config.apiKey,
         token: token
-      }
+      },
+      validateStatus: status => status >= 200 && status <= 503
     };
 
-    const response = await rp(rpOptions);
-    config.authenticationToken = response.token;
+    const response = await axios(axiosOptions);
+    if (response.status === 200) {
+      config.authenticationToken = response.data.token;
+    }
 
-    return response;
+    return formatAxiosResponse(response);
   }
 
   async function fraudCheck(params) {
@@ -67,20 +90,22 @@ module.exports = function PayapiApiClient(config) {
     const body = params;
     body.authenticationToken = { token: config.authenticationToken };
 
-    const rpOptions = {
+    const axiosOptions = {
       method: 'POST',
-      json: true,
       timeout: 10000,
-      uri: apiUrl + '/v1/api/authorized/fraud/check/' + params.ip,
-      body: body
+      url: apiUrl + '/v1/api/authorized/fraud/check/'+ params.ip,
+      data: body,
+      validateStatus: status => status >= 200 && status <= 503
     };
 
-    return await rp(rpOptions);
+    const response = await axios(axiosOptions);
+
+    return formatAxiosResponse(response);
   }
 
   async function creditCheck(ssn, amount, countryCode = 'FI', consumerNumber = 1) {
     if (!config.authenticationToken) {
-      throw new Error('You must authenticate first');
+      throw new Error('You must do the authentication first');
     }
     if (!ssn) {
       throw new Error('Validation: ssn must be a valid social security number');
@@ -95,21 +120,23 @@ module.exports = function PayapiApiClient(config) {
       throw new Error('Validation: consumerNumber must be a valid autoincremental number');
     }
 
-    const rpOptions = {
-      method: 'POST',
-      json: true,
+    const axiosOptions = {
+      method: 'post',
       timeout: 10000,
-      uri: apiUrl + '/v1/api/authorized/creditcheck',
-      body: {
+      url: apiUrl + '/v1/api/authorized/creditcheck',
+      data: {
         ssn: ssn,
         amount: amount,
         authenticationToken: { token: config.authenticationToken },
         countryCode: countryCode,
         consumerNumber: consumerNumber
-      }
+      },
+      validateStatus: status => status >= 200 && status <= 503
     };
 
-    return await rp(rpOptions);
+    const response = await axios(axiosOptions);
+
+    return formatAxiosResponse(response);
   }
 
   async function getTupasUrl(redirectUrl, sessionId) {
@@ -124,19 +151,21 @@ module.exports = function PayapiApiClient(config) {
     }
 
     const url = apiUrl + '/v1/api/authorized/signicat/' + encodeURIComponent(redirectUrl);
-    const rpOptions = {
-      uri: url,
+    const axiosOptions = {
+      url: url,
       timeout: 10000,
-      qs: {
+      params: {
         sessionId: sessionId
       },
       headers: {
-        'authorization': 'Bearer ' + config.authenticationToken
+        'Authorization': 'Bearer ' + config.authenticationToken
       },
-      json: true
+      validateStatus: status => status >= 200 && status <= 503
     };
 
-    return await rp(rpOptions);
+    const response = await axios(axiosOptions);
+
+    return formatAxiosResponse(response);
   }
 
   return {
