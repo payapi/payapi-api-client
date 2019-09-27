@@ -93,10 +93,16 @@ describe('PayapiApiClient', function() {
     });
 
     it('Should success in credit check', async () => {
-      sinon.stub(axios, 'post').returns({ status: 200, data: { message: 'Credit check passed successfully' } });
+      sinon.stub(axios, 'post')
+        .returns({ status: 200, data: { message: 'Credit check passed successfully' } });
       const result = await payapiApiClient.creditCheck('10102403231', 1100, 'FI');
 
       expect(result).to.have.property('message', 'Credit check passed successfully');
+    });
+    it('Should fail if not authenticated', async () => {
+      await expect(new PayapiApiClient(params).creditCheck('10102403231', 1100, 'FI'))
+        .to.be.rejectedWith(Error, /You must do the authentication first/);
+
     });
     it('Should return a Unauthorized error if authentication failed', async () => {
       sinon.stub(axios, 'post')
