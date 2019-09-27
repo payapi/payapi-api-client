@@ -32,7 +32,7 @@ async function run() {
   const creditCheck = await payapiClient.creditCheck(ssn, 1200, 'FI');
   console.info(creditCheck);
 
-  const tupasUrl = await payapiClient.getTupasUrl('http://staging-facepay.payapi.io');
+  const tupasUrl = await payapiClient.getTupasUrl('http://staging-facepay.payapi.io', 'session-x2ab3896j3ns');
   console.info(tupasUrl);
 
   process.exit(0);
