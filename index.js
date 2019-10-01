@@ -152,7 +152,7 @@ module.exports = function PayapiApiClient(config) {
       throw new Error('Validation: sessionId is too large (max 128 characters)');
     }
 
-    const url = apiUrl + '/v1/api/authorized/signicat/' + config.publicId + '/' + encodeURIComponent(redirectUrl);
+    const url = apiUrl + '/v1/api/authorized/signicat/' + encodeURIComponent(redirectUrl);
     const options = {
       timeout: 10000,
       params: { sessionId },
