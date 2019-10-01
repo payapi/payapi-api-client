@@ -36,9 +36,6 @@ module.exports = function PayapiApiClient(config) {
   if (!config.apiKey) {
     throw new Error('Configuration: apiKey is mandatory');
   }
-  if (!config.publicId) {
-    throw new Error('Configuration: publicId is mandatory');
-  }
   if (!config.secret) {
     throw new Error('Configuration: secret is mandatory');
   }
