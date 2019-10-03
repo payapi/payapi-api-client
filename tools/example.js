@@ -28,7 +28,7 @@ async function run() {
   const fraudCheck = await payapiClient.fraudCheck(fraudCheckParams);
   console.info(fraudCheck);
 
-  const ssn = 'Your social security number';
+  const ssn = '210281-9988';
   const creditCheck = await payapiClient.creditCheck(ssn, 1200, 'FI');
   console.info(creditCheck);
 
