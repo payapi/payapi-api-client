@@ -8,6 +8,11 @@ const debug = require('debug')('payapi-api-client');
 const stagUrl = 'https://staging-input.payapi.io';
 const prodUrl = 'https://input.payapi.io';
 
+const axiosOptions = {
+  timeout: 10000,
+  validateStatus: status => status >= 200 && status <= 503
+};
+
 function formatAxiosResponse(response) {
   if (response.status === 200) {
     return response.data;
@@ -71,12 +76,8 @@ module.exports = function PayapiApiClient(config) {
       key: config.apiKey,
       token: token
     };
-    const options = {
-      timeout: 10000,
-      validateStatus: status => status >= 200 && status <= 503
-    };
 
-    const response = await axios.post(apiUrl + '/v1/api/auth/login', data, options);
+    const response = await axios.post(apiUrl + '/v1/api/auth/login', data, axiosOptions);
 
     if (response.status === 200) {
       config.authenticationToken = response.data.token;
@@ -92,15 +93,9 @@ module.exports = function PayapiApiClient(config) {
     const body = params;
     body.authenticationToken = { token: config.authenticationToken };
 
-    const axiosOptions = {
-      method: 'POST',
-      timeout: 10000,
-      url: apiUrl + '/v1/api/authorized/fraud/check/'+ params.ip,
-      data: body,
-      validateStatus: status => status >= 200 && status <= 503
-    };
+    const url = apiUrl + '/v1/api/authorized/fraud/check/' + params.ip;
 
-    const response = await axios(axiosOptions);
+    const response = await axios.post(url, body, axiosOptions);
 
     return formatAxiosResponse(response);
   }
@@ -129,12 +124,8 @@ module.exports = function PayapiApiClient(config) {
       countryCode: countryCode,
       consumerNumber: consumerNumber
     }
-    const options = {
-      timeout: 10000,
-      validateStatus: status => status >= 200 && status <= 503
-    };
 
-    const response = await axios.post(url, data, options);
+    const response = await axios.post(url, data, axiosOptions);
 
     return formatAxiosResponse(response);
   }
@@ -150,14 +141,10 @@ module.exports = function PayapiApiClient(config) {
     }
 
     const url = apiUrl + '/v1/api/authorized/signicat/' + encodeURIComponent(redirectUrl);
-    const options = {
-      timeout: 10000,
-      params: { sessionId },
-      headers: {
-        'Authorization': 'Bearer ' + config.authenticationToken
-      },
-      validateStatus: status => status >= 200 && status <= 503
-    };
+
+    const options = { ...axiosOptions };
+    options.params = { sessionId };
+    options.headers = { 'Authorization': 'Bearer ' + config.authenticationToken };
 
     const response = await axios.get(url, options);
 
