@@ -1,0 +1,31 @@
+{
+  "items": [{
+      "description": "Create a new e-commerce store based on opencart",
+      "quantity": 1,
+      "priceExcVat": 299.95,
+      "vatPercentage": 21
+    },
+    {
+      "description": "Configure opencart template",
+      "quantity": 1,
+      "priceExcVat": 49.95,
+      "vatPercentage": 21
+    }
+  ],
+  "invoiceId": "NGtLdTynVM",
+  "invoiceRef": "ANY_REFERENCE",
+  "invoiceTermsOfPayment": "Thank you for your business. Please call me once you have paid to proceed with the creation of the store",
+  "invoicingClient": {
+    "clientEmail": "example@example.com",
+    "clientMobilePhoneNumber": "34123456789",
+    "clientPostalCode": "Postal",
+    "clientType": "personal",
+    "clientPersonalId": "PersonalId",
+    "clientBusinessId": "BusinessID",
+    "clientVatId": "vatId",
+    "clientCity": "City",
+    "clientStreetAddress": "Street address",
+    "clientName": "John Doe",
+    "clientCountryCode": "ES"
+  }
+}
