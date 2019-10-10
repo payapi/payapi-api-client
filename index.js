@@ -151,6 +151,25 @@ module.exports = function PayapiApiClient(config) {
     return formatAxiosResponse(response);
   }
 
+  async function getInvoice(invoiceId) {
+    checkAuthentication();
+    if (!invoiceId || invoiceId.length < 7 || invoiceId.length > 14) {
+      throw new Error('Validation: invoiceId is not valid');
+    }
+
+    const url = apiUrl + '/v1/api/authorized/invoices/' + invoiceId;
+    const options = { ... axiosOptions };
+    options.headers = { 'Authorization': 'Bearer ' + config.authenticationToken };
+
+    const response = await axios.get(url, options);
+    const format = formatAxiosResponse(response);
+    
+    return {
+      invoice: format,
+      invoicingClient: format.invoicingClient
+    };
+  }
+
   return {
     apiUrl,
     authenticate,
@@ -158,6 +177,7 @@ module.exports = function PayapiApiClient(config) {
     creditCheck,
     fraudCheck,
     generateAccessToken,
-    getTupasUrl
+    getTupasUrl,
+    getInvoice
   };
 };
