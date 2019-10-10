@@ -35,6 +35,9 @@ async function run() {
   const tupasUrl = await payapiClient.getTupasUrl('http://staging-facepay.payapi.io', 'session-x2ab3896j3ns');
   console.info(tupasUrl);
 
+  const invoice = await payapiClient.getInvoice('NGtLdTynVM');
+  console.info(invoice);
+
   process.exit(0);
 }
 
