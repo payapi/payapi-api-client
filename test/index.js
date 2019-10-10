@@ -12,6 +12,38 @@ chai.use(sinonChai);
 chai.use(chaiAsPromised);
 var PayapiApiClient = require('../index');
 
+const invoiceData = {
+  "items": [{
+      "description": "Create a new e-commerce store based on opencart",
+      "quantity": 1,
+      "priceExcVat": 299.95,
+      "vatPercentage": 21
+    },
+    {
+      "description": "Configure opencart template",
+      "quantity": 1,
+      "priceExcVat": 49.95,
+      "vatPercentage": 21
+    }
+  ],
+  "invoiceId": "NGtLdTynVM",
+  "invoiceRef": "ANY_REFERENCE",
+  "invoiceTermsOfPayment": "Thank you for your business. Please call me once you have paid to proceed with the creation of the store",
+  "invoicingClient": {
+    "clientEmail": "example@example.com",
+    "clientMobilePhoneNumber": "34123456789",
+    "clientPostalCode": "Postal code",
+    "clientType": "personal",
+    "clientPersonalId": "PersonalId",
+    "clientBusinessId": "BusinessID",
+    "clientVatId": "vatId",
+    "clientCity": "City",
+    "clientStreetAddress": "Street address",
+    "clientName": "John Doe",
+    "clientCountryCode": "ES"
+  }
+};
+
 let params;
 
 beforeEach(() => {
@@ -175,6 +207,49 @@ describe('PayapiApiClient', function() {
     });
   });
 
+  describe('Get Invoice', () => {
+    let payapiApiClient;
 
+    before(async function()  {
+      sinon.stub(axios, 'post').returns({ status: 200, data: { token: 'encodedToken' } });
+      payapiApiClient = new PayapiApiClient(params);
+      await payapiApiClient.authenticate();
+      sinon.restore();
+    });
+
+    it('Should return invoice Data', async () => {
+      sinon.stub(axios, 'get')
+        .returns({ status: 200, data: invoiceData });
+      const result = await payapiApiClient.getInvoice(invoiceData.invoiceId);
+
+      expect(result).to.have.property('invoice');
+      expect(result).to.have.property('invoicingClient');
+      expect(result.invoice).to.have.property('items')
+        .and.to.be.an('array')
+        .and.to.have.lengthOf(invoiceData.items.length);
+      expect(result.invoice).to.have.property('invoiceId').and.to.be.equal(invoiceData.invoiceId);
+      expect(result.invoice).to.have.property('invoiceRef').and.to.be.equal(invoiceData.invoiceRef);
+      expect(result.invoice).to.have.property('invoiceTermsOfPayment')
+        .and.to.be.equal(invoiceData.invoiceTermsOfPayment);
+    });
+
+    it('Should fail if not authenticated', async () => {
+      await expect(new PayapiApiClient(params).getInvoice(invoiceData.invoiceId))
+          .to.be.rejectedWith(Error, /You must do the authentication first/);
+    });
+
+    it('Should fail if invoiceId is not valid or empty', async () => {
+      await expect(payapiApiClient.getInvoice('234'))
+        .to.be.rejectedWith(Error, /Validation: invoiceId is not valid/);
+    });
+
+    it('Should fail if invoice is not found', () => {
+      sinon.stub(axios, 'get').returns({ status: 400, data: { error: 'Invoice not found' } });
+
+      expect(payapiApiClient.getInvoice(invoiceData.invoiceId))
+        .to.be.rejectedWith(Error, /Invoice not found/);
+    });
+
+  });
 
 });
