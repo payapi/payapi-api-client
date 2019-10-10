@@ -170,6 +170,43 @@ module.exports = function PayapiApiClient(config) {
     };
   }
 
+  async function createStandardInvoice(invoice, invoicingClient) {
+    return await createInvoice(invoice, invoicingClient, false);
+  }
+
+  async function createFinanceInvoice(invoice, invoicingClient) {
+    return await createInvoice(invoice, invoicingClient, true);
+  }
+
+  async function createInvoice(invoice, invoicingClient, isFinance = false) {
+    checkAuthentication();
+    // Todo validate mandatory/optional fields
+    if (!invoice || typeof (invoice) !== 'object') {
+      throw new Error('Validation: invoice object parameter is mandatory');
+    }
+    if (!invoicingClient || typeof(invoicingClient) !== 'object') {
+      throw new Error('Validation: invoicingClient object parameter is mandatory');
+    }
+    
+    const url = apiUrl + '/v1/api/authorized/invoices';
+    const options = { ... axiosOptions };
+    options.headers = { 'Authorization': 'Bearer ' + config.authenticationToken };
+
+    const payload = invoice;
+    payload.isFinanceType = isFinance;
+    payload.invoicingClient = invoicingClient;
+    const invoiceDataToken = jwt.encode(payload, config.apiKey, 'HS512');
+
+    const body = { data: invoiceDataToken };
+    const response = await axios.post(url, body, options);
+    const format = formatAxiosResponse(response);
+    
+    return {
+      invoice: format,
+      invoicingClient: format.invoicingClient
+    };
+  }
+
   return {
     apiUrl,
     authenticate,
@@ -178,6 +215,9 @@ module.exports = function PayapiApiClient(config) {
     fraudCheck,
     generateAccessToken,
     getTupasUrl,
-    getInvoice
+    getInvoice,
+    createFinanceInvoice,
+    createInvoice,
+    createStandardInvoice
   };
 };

@@ -2,6 +2,7 @@
 
 const assert = require('assert');
 const PayapiClient = require('../index');
+const invoice = require('../data/invoice.json');
 
 assert.ok(process.env.API_KEY, 'Please specify a API_KEY');
 assert.ok(process.env.PASSWORD, 'Please specify a PASSWORD');
@@ -35,8 +36,12 @@ async function run() {
   const tupasUrl = await payapiClient.getTupasUrl('http://staging-facepay.payapi.io', 'session-x2ab3896j3ns');
   console.info(tupasUrl);
 
-  const invoice = await payapiClient.getInvoice('NGtLdTynVM');
-  console.info(invoice);
+  const invoiceResponse = await payapiClient.createFinanceInvoice(invoice, invoice.invoicingClient);
+  console.info(invoiceResponse.invoice);
+  console.info(invoiceResponse.invoicingClient);
+
+  const invoiceData = await payapiClient.getInvoice(invoiceResponse.invoice.invoiceId);
+  console.info(invoiceData);
 
   process.exit(0);
 }
