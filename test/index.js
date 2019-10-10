@@ -220,17 +220,21 @@ describe('PayapiApiClient', function() {
     it('Should return invoice Data', async () => {
       sinon.stub(axios, 'get')
         .returns({ status: 200, data: invoiceData });
+
       const result = await payapiApiClient.getInvoice(invoiceData.invoiceId);
 
       expect(result).to.have.property('invoice');
       expect(result).to.have.property('invoicingClient');
-      expect(result.invoice).to.have.property('items')
-        .and.to.be.an('array')
-        .and.to.have.lengthOf(invoiceData.items.length);
-      expect(result.invoice).to.have.property('invoiceId').and.to.be.equal(invoiceData.invoiceId);
-      expect(result.invoice).to.have.property('invoiceRef').and.to.be.equal(invoiceData.invoiceRef);
-      expect(result.invoice).to.have.property('invoiceTermsOfPayment')
-        .and.to.be.equal(invoiceData.invoiceTermsOfPayment);
+
+      for(let [key,value] of Object.entries(invoiceData)) {
+        if (key !== 'invoicingClient') {
+          expect(result.invoice).to.have.property(key, invoiceData[key]);
+        }
+      }
+
+      for(let [key, value] of Object.entries(invoiceData.invoicingClient)) {
+        expect(result.invoicingClient).to.have.property(key, invoiceData.invoicingClient[key]);
+      }
     });
 
     it('Should fail if not authenticated', async () => {
