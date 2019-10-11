@@ -7,14 +7,12 @@ const invoice = require('../data/invoice.json');
 assert.ok(process.env.API_KEY, 'Please specify a API_KEY');
 assert.ok(process.env.PASSWORD, 'Please specify a PASSWORD');
 assert.ok(process.env.SECRET, 'Please specify a SECRET');
-assert.ok(process.env.PUBLIC_ID, 'Please specify a PUBLIC_ID');
 
 async function run() {
   const payapiClient = new PayapiClient({
     apiKey: process.env.API_KEY,
     password: process.env.PASSWORD,
     secret: process.env.SECRET,
-    publicId: process.env.PUBLIC_ID,
     devUrl: 'http://localhost:3000'
   });
   const response = await payapiClient.authenticate();
