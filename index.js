@@ -30,10 +30,8 @@ function formatAxiosResponse(response) {
 }
 
 module.exports = function PayapiApiClient(config) {
-  let apiUrl = config.isProd ? prodUrl : stagUrl;
-
   if (!config) {
-    throw new Error('Configuration: missing params params');
+    throw new Error('Configuration: missing constructor params');
   }
   if (config.isProd && typeof (config.isProd) !== 'boolean') {
     throw new Error('Configuration: isProd must be a boolean');
@@ -47,6 +45,7 @@ module.exports = function PayapiApiClient(config) {
   if (!config.password) {
     throw new Error('Configuration: password is mandatory');
   }
+  let apiUrl = config.isProd ? prodUrl : stagUrl;
 
   // Allow development environment
   if (config.devUrl) {
@@ -210,6 +209,39 @@ module.exports = function PayapiApiClient(config) {
     };
   }
 
+  async function updateInvoice(invoiceId, invoice, invoicingClient) {
+    checkAuthentication();
+    if (!invoiceId || invoiceId.length < 7 || invoiceId.length > 14) {
+      throw new Error('Validation: invoiceId is not valid');
+    }
+    if (!invoice || typeof (invoice) !== 'object') {
+      throw new Error('Validation: invoice object parameter is mandatory');
+    }
+    if (!invoicingClient) {
+      throw new Error('Validation: invoicingClient parameter is mandatory');
+    }
+    if (typeof invoicingClient !== 'string' && typeof invoicingClient !== 'object') {
+      throw new Error('Validation: invoicingClient must be a valid id or a client object');
+    }
+
+    const url = apiUrl + '/v1/api/authorized/invoices/' + invoiceId;
+    const options = { ...axiosOptions };
+    options.headers = { 'Authorization': 'Bearer ' + config.authenticationToken };
+
+    const payload = invoice;
+    payload.invoicingClient = invoicingClient;
+    const invoiceDataToken = jwt.encode(payload, config.apiKey, 'HS512');
+
+    const body = { data: invoiceDataToken };
+    const response = await axios.put(url, body, options);
+    const format = formatAxiosResponse(response);
+
+    return {
+      invoice: format,
+      invoicingClient: format.invoicingClient
+    };
+  }
+
   return {
     apiUrl,
     authenticate,
@@ -221,6 +253,7 @@ module.exports = function PayapiApiClient(config) {
     getInvoice,
     createFinanceInvoice,
     createInvoice,
-    createStandardInvoice
+    createStandardInvoice,
+    updateInvoice
   };
 };

@@ -13,22 +13,38 @@ chai.use(chaiAsPromised);
 var PayapiApiClient = require('../index');
 const invoiceData = require('../data/invoice.json');
 
-let params;
+const constructorParams = {
+  secret: 'test-secret',
+  apiKey: 'test-apikey',
+  password: 'password-test',
+  isProd: false
+};
 
-beforeEach(() => {
-  params = {
-    secret: 'test-secret',
-    apiKey: 'test-apikey',
-    password: 'password-test',
-    isProd: false
-  };
-});
+function validateInvoiceData(originalData, result) {
+  for (let [key, value] of Object.entries(originalData)) {
+    if (key !== 'invoicingClient') {
+      expect(result.invoice).to.have.property(key, originalData[key]);
+    }
+  }
 
-afterEach(() => sinon.restore());
+  for (let [key, value] of Object.entries(originalData.invoicingClient)) {
+    expect(result.invoicingClient).to.have.property(key, originalData.invoicingClient[key]);
+  }
+}
 
 describe('PayapiApiClient', function() {
+  let params;
+  beforeEach(() => {
+    params = { ...constructorParams };
+  });
+
+  afterEach(() => sinon.restore());
 
   describe('Constructor', () => {
+    it('Should return an error when params is empty', () => {
+      params = {};
+      expect(() => new PayapiApiClient(params)).to.throw(Error, /apiKey/);
+    });
     it('Should return an error when apiKey is missing', () => {
       delete params.apiKey;
       expect(() => new PayapiApiClient(params)).to.throw(Error, /apiKey/);
@@ -195,15 +211,7 @@ describe('PayapiApiClient', function() {
       expect(result).to.have.property('invoice');
       expect(result).to.have.property('invoicingClient');
 
-      for(let [key,value] of Object.entries(invoiceData)) {
-        if (key !== 'invoicingClient') {
-          expect(result.invoice).to.have.property(key, invoiceData[key]);
-        }
-      }
-
-      for(let [key, value] of Object.entries(invoiceData.invoicingClient)) {
-        expect(result.invoicingClient).to.have.property(key, invoiceData.invoicingClient[key]);
-      }
+      validateInvoiceData(invoiceData, result);
     });
 
     it('Should fail if not authenticated', async () => {
@@ -245,15 +253,7 @@ describe('PayapiApiClient', function() {
       expect(result).to.have.property('invoice');
       expect(result).to.have.property('invoicingClient');
 
-      for(let [key,value] of Object.entries(invoiceData)) {
-        if (key !== 'invoicingClient') {
-          expect(result.invoice).to.have.property(key, invoiceData[key]);
-        }
-      }
-
-      for(let [key, value] of Object.entries(invoiceData.invoicingClient)) {
-        expect(result.invoicingClient).to.have.property(key, invoiceData.invoicingClient[key]);
-      }
+      validateInvoiceData(invoiceData, result);
     });
 
     it('Should fail if invoice is empty', async () => {
@@ -277,6 +277,59 @@ describe('PayapiApiClient', function() {
 
       expect(payapiApiClient.createInvoice(invoice, invoicingClient))
         .to.be.rejectedWith(Error, errMessage);
+    });
+  });
+
+  describe('Update invoice', () => {
+    let payapiApiClient;
+    let updatedInvoiceData = { ...invoiceData };
+    updatedInvoiceData.invoiceTermsOfPayment = 'Updated terms of payment';
+    let invoice = { ...updatedInvoiceData };
+    let invoicingClient = { ...updatedInvoiceData.invoicingClient };
+    delete invoice.invoicingClient;
+
+    before(async function() {
+      sinon.stub(axios, 'post').returns({ status: 200, data: { token: 'encodedToken' } });
+      payapiApiClient = new PayapiApiClient(params);
+      await payapiApiClient.authenticate();
+    });
+
+    beforeEach(() => {
+      sinon.restore();
+    })
+
+    it('Should update an invoice and return updated data', async () => {
+      sinon.stub(axios, 'put').returns({ status: 200, data: updatedInvoiceData });
+      const result = await payapiApiClient.updateInvoice(invoiceData.invoiceId, invoice, invoicingClient);
+
+      expect(result).to.have.property('invoice');
+      expect(result).to.have.property('invoicingClient');
+
+      validateInvoiceData(updatedInvoiceData, result);
+    });
+
+    it('Should fail if invoiceId is empty', async () => {
+      await expect(payapiApiClient.updateInvoice(null, invoice, invoicingClient))
+        .to.be.rejectedWith(Error, /Validation: invoiceId is not valid/);
+    });
+
+    it('Should fail if invoice is not valid', async () => {
+      await expect(payapiApiClient.updateInvoice('12345678', null, invoicingClient))
+        .to.be.rejectedWith(Error, /Validation: invoice object parameter is mandatory/);
+    });
+
+    it('Should fail if invoicingClient is not valid', async () => {
+      await expect(payapiApiClient.updateInvoice('12345678', invoice, null))
+        .to.be.rejectedWith(Error, /Validation: invoicingClient parameter is mandatory/);
+    });
+
+    it('Should capture not found errors', () => {
+      let errMessage = 'Resource not found';
+      sinon.stub(axios, 'put').returns({ status: 404, message: errMessage });
+
+      expect(payapiApiClient.updateInvoice('12345678', invoice, invoicingClient))
+        .to.be.rejectedWith(Error, errMessage);
+
     });
   });
 

@@ -18,16 +18,29 @@ async function run() {
   const response = await payapiClient.authenticate();
   console.log('Authenticated successfully');
 
-  console.log('Requesting invoice creation ...');
-  const invoiceResponse = await payapiClient.createFinanceInvoice(invoice, invoice.invoicingClient);
+  console.log('Requesting finance invoice creation ...');
+  const financeInvoiceResponse = await payapiClient.createFinanceInvoice(invoice, invoice.invoicingClient);
+  const financeInvoiceId = financeInvoiceResponse.invoice.invoiceId;
+  console.log('Finance invoice created with id: ' + financeInvoiceId);
+
+  console.log('Requesting standard invoice creation ...');
+  const standardInvoiceResponse = await payapiClient.createStandardInvoice(invoice, invoice.invoicingClient);
+  const standardInvoiceId = standardInvoiceResponse.invoice.invoiceId;
+  console.log('Standard invoice created with id: ' + standardInvoiceId);
+
+  console.log('Updating an invoice ...');
+  invoice.invoiceTermsOfPayment = 'Updated terms of payment';
+  const updated = await payapiClient.updateInvoice(standardInvoiceId, invoice, standardInvoiceResponse.invoicingClient);
+  console.log('Updated invoice with id: '+ updated.invoice.invoiceId);
 
   console.log('Requesting invoice data ...');
-  const invoiceData = await payapiClient.getInvoice(invoiceResponse.invoice.invoiceId);
+  const invoiceData = await payapiClient.getInvoice(standardInvoiceId);
   console.info('Found invoice: ' + JSON.stringify(invoiceData, null, 2));
 
-  console.log('Creating invoice for existing invoicingClient: ' + invoiceResponse.invoicingClient);
-  const newResponse = await payapiClient.createFinanceInvoice(invoice, invoiceResponse.invoicingClient);
-  console.log('Created invoice: ' + JSON.stringify(newResponse.invoice, null, 2));
+  console.log('Creating invoice for existing invoicingClient: ' + financeInvoiceResponse.invoicingClient);
+  const newResponse = await payapiClient.createFinanceInvoice(invoice, financeInvoiceResponse.invoicingClient);
+  console.log('Created invoice');
+
   process.exit(0);
 }
 
