@@ -18,21 +18,16 @@ async function run() {
   const response = await payapiClient.authenticate();
   console.log('Authenticated successfully');
 
-  const fraudCheckParams = {
-    ip: '8.8.8.8',
-    email: 'example@example.com',
-    bin: '',
-    shippingCountryCode: 'FI'
-  };
-  const fraudCheck = await payapiClient.fraudCheck(fraudCheckParams);
-  console.info(fraudCheck);
 
-  const ssn = '210281-9988';
-  const creditCheck = await payapiClient.creditCheck(ssn, 1200, 'FI');
-  console.info(creditCheck);
 
-  const tupasUrl = await payapiClient.getTupasUrl('http://staging-facepay.payapi.io', 'session-x2ab3896j3ns');
-  console.info(tupasUrl);
+  console.log('Requesting invoice creation ...');
+  const invoiceResponse = await payapiClient.createFinanceInvoice(invoice, invoice.invoicingClient);
+  console.info('Invoice: ' + JSON.stringify(invoiceResponse.invoice, null, 2));
+  console.info('InvoicingClient: ' + JSON.stringify(invoiceResponse.invoicingClient, null, 2));
+
+  console.log('Requesting invoice data ...');
+  const invoiceData = await payapiClient.getInvoice(invoiceResponse.invoice.invoiceId);
+  console.info('Found invoice: ' + JSON.stringify(invoiceData, null, 2));
 
   process.exit(0);
 }
