@@ -1,7 +1,7 @@
 # PayapiApiClient module
 
-DESCRIPTION
+NodeJS client for PayApi Ltd API.
 
 ## Usage
 
-TBD: Add usage
+Api Docs: https://payapi.io/apidoc/
