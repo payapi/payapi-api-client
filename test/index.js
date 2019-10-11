@@ -261,6 +261,11 @@ describe('PayapiApiClient', function() {
         .to.be.rejectedWith(Error, /Validation: invoice object parameter is mandatory/);
     });
 
+    it('Should fail if invoicingClient is empty', async () => {
+      await expect(payapiApiClient.createInvoice(invoice, null))
+        .to.be.rejectedWith(Error, /Validation: invoicingClient parameter is mandatory/);
+    });
+
     it('Should fail if not authenticated', async () => {
       await expect(new PayapiApiClient(params).createInvoice(invoiceData.invoiceId))
           .to.be.rejectedWith(Error, /You must do the authentication first/);

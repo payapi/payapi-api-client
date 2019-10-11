@@ -163,7 +163,7 @@ module.exports = function PayapiApiClient(config) {
 
     const response = await axios.get(url, options);
     const format = formatAxiosResponse(response);
-    
+
     return {
       invoice: format,
       invoicingClient: format.invoicingClient
@@ -184,10 +184,13 @@ module.exports = function PayapiApiClient(config) {
     if (!invoice || typeof (invoice) !== 'object') {
       throw new Error('Validation: invoice object parameter is mandatory');
     }
-    if (!invoicingClient || typeof(invoicingClient) !== 'object') {
-      throw new Error('Validation: invoicingClient object parameter is mandatory');
+    if (!invoicingClient) {
+      throw new Error('Validation: invoicingClient parameter is mandatory');
     }
-    
+    if (typeof invoicingClient !== 'string' && typeof invoicingClient !== 'object') {
+      throw new Error('Validation: invoicingClient must be a valid id or a client object');
+    }
+
     const url = apiUrl + '/v1/api/authorized/invoices';
     const options = { ... axiosOptions };
     options.headers = { 'Authorization': 'Bearer ' + config.authenticationToken };
@@ -200,7 +203,7 @@ module.exports = function PayapiApiClient(config) {
     const body = { data: invoiceDataToken };
     const response = await axios.post(url, body, options);
     const format = formatAxiosResponse(response);
-    
+
     return {
       invoice: format,
       invoicingClient: format.invoicingClient

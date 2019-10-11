@@ -18,17 +18,16 @@ async function run() {
   const response = await payapiClient.authenticate();
   console.log('Authenticated successfully');
 
-
-
   console.log('Requesting invoice creation ...');
   const invoiceResponse = await payapiClient.createFinanceInvoice(invoice, invoice.invoicingClient);
-  console.info('Invoice: ' + JSON.stringify(invoiceResponse.invoice, null, 2));
-  console.info('InvoicingClient: ' + JSON.stringify(invoiceResponse.invoicingClient, null, 2));
 
   console.log('Requesting invoice data ...');
   const invoiceData = await payapiClient.getInvoice(invoiceResponse.invoice.invoiceId);
   console.info('Found invoice: ' + JSON.stringify(invoiceData, null, 2));
 
+  console.log('Creating invoice for existing invoicingClient: ' + invoiceResponse.invoicingClient);
+  const newResponse = await payapiClient.createFinanceInvoice(invoice, invoiceResponse.invoicingClient);
+  console.log('Created invoice: ' + JSON.stringify(newResponse.invoice, null, 2));
   process.exit(0);
 }
 
