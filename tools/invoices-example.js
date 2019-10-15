@@ -28,10 +28,10 @@ async function run() {
   const standardInvoiceId = standardInvoiceResponse.invoice.invoiceId;
   console.log('Standard invoice created with id: ' + standardInvoiceId);
 
-  console.log('Updating an invoice ...');
-  invoice.invoiceTermsOfPayment = 'Updated terms of payment';
-  const updated = await payapiClient.updateInvoice(standardInvoiceId, invoice, standardInvoiceResponse.invoicingClient);
-  console.log('Updated invoice with id: '+ updated.invoice.invoiceId);
+  //console.log('Updating an invoice ...');
+  //invoice.invoiceTermsOfPayment = 'Updated terms of payment';
+  //const updated = await payapiClient.updateInvoice(standardInvoiceId, invoice, standardInvoiceResponse.invoicingClient);
+  //console.log('Updated invoice with id: '+ updated.invoice.invoiceId);
 
   console.log('Requesting invoice data ...');
   const invoiceData = await payapiClient.getInvoice(standardInvoiceId);

@@ -1,0 +1,67 @@
+{
+  "order": {
+    "sumInCentsIncVat": 322,
+    "sumInCentsExcVat": 300,
+    "vatInCents": 22,
+    "currency": "EUR",
+    "referenceId": "ref123",
+    "tosUrl":"https://payapi.io/terms"
+  },
+  "products": [
+    {
+      "id": "bbc123456",
+      "quantity": 1,
+      "title": "Black bling cap",
+      "description": "Flashy fine cap",
+      "imageUrl": "https://blingcaps.org/black_bling_cap.png",
+      "category": "Caps and hats",
+      "model": "BLINGCAP123",
+      "priceInCentsIncVat": 122,
+      "priceInCentsExcVat": 100,
+      "vatInCents": 22,
+      "vatPercentage": 22,
+      "extraData": "blingbling"
+    },
+    {
+      "id": "pbc123456",
+      "quantity": 1,
+      "title": "Pink bling cap",
+      "description": "Flashy fine cap",
+      "imageUrl": "https://blingcaps.org/pink_bling_cap.png",
+      "category": "Caps and hats",
+      "model": "BLINGCAP123",
+      "priceInCentsIncVat": 222,
+      "priceInCentsExcVat": 200,
+      "vatInCents": 22,
+      "vatPercentage": 22,
+      "extraData": "blingbling"
+    }
+  ],
+  "shippingAddress": {
+    "recipientName": "John Doe",
+    "co": "Jane Doe",
+    "streetAddress": "Calle Andalucia 32",
+    "streetAddress2": "Los Boliches",
+    "postalCode": 29640,
+    "city": "Fuengirola",
+    "stateOrProvince": "Malaga",
+    "country": "Spain"
+  },
+  "consumer": {
+    "consumerId": "diiba69",
+    "email": "diiba69@example.com",
+    "locale": "en_US",
+    "mobilePhoneNumber": "34123456789"
+  },
+  "callbacks": {
+    "processing": "https://staging-api.loverocksshop.com/v1/callback-processing",
+    "success": "https://staging-api.loverocksshop.com/v1/callback-success",
+    "failed": "https://staging-api.loverocksshop.com/v1/callback-failed",
+    "chargeback": "https://staging-api.loverocksshop.com/v1/callback-chargeback"
+  },
+  "returnUrls": {
+    "success": "https://staging.loverocksshop.com/payment-success",
+    "cancel": "https://staging.loverocksshop.com/payment-cancel",
+    "failed": "https://staging.loverocksshop.com/payment-failed"
+  }
+}

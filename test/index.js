@@ -1,5 +1,4 @@
 'use strict';
-
 const should = require('should');
 const chai = require('chai');
 const chaiAsPromised = require('chai-as-promised');
@@ -10,8 +9,10 @@ const axios = require('axios');
 const validator = require('validator');
 chai.use(sinonChai);
 chai.use(chaiAsPromised);
-var PayapiApiClient = require('../index');
+const helpers = require('../lib/helpers');
+const PayapiApiClient = require('../index');
 const invoiceData = require('../data/invoice.json');
+const secureformData = require('../data/secureform.json');
 
 const constructorParams = {
   secret: 'test-secret',
@@ -19,6 +20,9 @@ const constructorParams = {
   password: 'password-test',
   isProd: false
 };
+const payload = { data: 'test' };
+const authToken = helpers.generateToken(payload, constructorParams.secret);
+const secureformDataToken = helpers.generateToken(secureformData, constructorParams.apiKey);
 
 function validateInvoiceData(originalData, result) {
   for (let [key, value] of Object.entries(originalData)) {
@@ -77,10 +81,12 @@ describe('PayapiApiClient', function() {
 
   describe('Authenticate', () => {
     it('Should authenticate and return access token', async () => {
-      sinon.stub(axios, 'post').returns({ status: 200, data: { token: 'encodedToken' }});
+      sinon.stub(axios, 'post').returns({ status: 200, data: { token: authToken }});
       const result = await new PayapiApiClient(params).authenticate();
 
-      expect(result).to.have.property('token', 'encodedToken');
+      expect(result).to.have.property('token', authToken);
+      const decoded = helpers.decodeToken(result.token, params.secret);
+      expect(decoded.data).to.be.equal(payload.data);
     });
     it('Should return a Unauthorized error if authentication failed', () => {
       sinon.stub(axios, 'post').returns({ status: 401, data: { error: 'Unauthorized' } });
@@ -99,7 +105,7 @@ describe('PayapiApiClient', function() {
     let payapiApiClient;
 
     before(async function()  {
-      sinon.stub(axios, 'post').returns({ status: 200, data: { token: 'encodedToken' } });
+      sinon.stub(axios, 'post').returns({ status: 200, data: { token: authToken } });
       payapiApiClient = new PayapiApiClient(params);
       await payapiApiClient.authenticate();
       sinon.restore();
@@ -152,7 +158,7 @@ describe('PayapiApiClient', function() {
     let payapiApiClient;
 
     before(async function() {
-      sinon.stub(axios, 'post').returns({ status: 200, data: { token: 'encodedToken' } });
+      sinon.stub(axios, 'post').returns({ status: 200, data: { token: authToken } });
       payapiApiClient = new PayapiApiClient(params);
       await payapiApiClient.authenticate();
       sinon.restore();
@@ -196,7 +202,7 @@ describe('PayapiApiClient', function() {
     let payapiApiClient;
 
     before(async function()  {
-      sinon.stub(axios, 'post').returns({ status: 200, data: { token: 'encodedToken' } });
+      sinon.stub(axios, 'post').returns({ status: 200, data: { token: authToken } });
       payapiApiClient = new PayapiApiClient(params);
       await payapiApiClient.authenticate();
       sinon.restore();
@@ -240,7 +246,7 @@ describe('PayapiApiClient', function() {
     delete invoice.invoicingClient;
 
     before(async function()  {
-      sinon.stub(axios, 'post').returns({ status: 200, data: { token: 'encodedToken' } });
+      sinon.stub(axios, 'post').returns({ status: 200, data: { token: authToken } });
       payapiApiClient = new PayapiApiClient(params);
       await payapiApiClient.authenticate();
       sinon.restore();
@@ -289,7 +295,7 @@ describe('PayapiApiClient', function() {
     delete invoice.invoicingClient;
 
     before(async function() {
-      sinon.stub(axios, 'post').returns({ status: 200, data: { token: 'encodedToken' } });
+      sinon.stub(axios, 'post').returns({ status: 200, data: { token: authToken } });
       payapiApiClient = new PayapiApiClient(params);
       await payapiApiClient.authenticate();
     });
@@ -330,6 +336,49 @@ describe('PayapiApiClient', function() {
       expect(payapiApiClient.updateInvoice('12345678', invoice, invoicingClient))
         .to.be.rejectedWith(Error, errMessage);
 
+    });
+  });
+
+  describe('Generate secureform token', () => {
+    let payapiApiClient, secureform;
+
+    before(async () => {
+      sinon.stub(axios, 'post').returns({ status: 200, data: { token: authToken } });
+      payapiApiClient = new PayapiApiClient(params);
+      await payapiApiClient.authenticate();
+    });
+
+    beforeEach(async () => {
+      secureform = { ...secureformData };
+    })
+
+    it('Should return secureform token', () => {
+      const token = payapiApiClient.createSecureformDataToken(secureformData);
+      expect(token).to.be.an('string');
+
+      const decode = helpers.decodeToken(token, params.apiKey);
+      expect(decode).to.be.deep.equal(secureformData);
+    });
+
+    it('Should fail if order object is missing', () => {
+      delete secureform.order;
+
+      expect(() => payapiApiClient.createSecureformDataToken(secureform))
+        .to.throw(Error, /Validation: order must be a valid object/);
+    });
+
+    it('Should fail if products array is empty', () => {
+      secureform.products = [];
+
+      expect(() => payapiApiClient.createSecureformDataToken(secureform))
+        .to.throw(Error, /Validation: products must be an array with at least one product item/);
+    });
+
+    it('Should fail if products array is missing', () => {
+      delete secureform.products;
+
+      expect(() => payapiApiClient.createSecureformDataToken(secureform))
+        .to.throw(Error, /Validation: products must be an array with at least one product item/);
     });
   });
 
