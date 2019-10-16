@@ -1,0 +1,55 @@
+{
+  "payment": {
+    "status": "successful"
+  },
+  "order": {
+    "sumInCentsIncVat": 322,
+    "sumInCentsExcVat": 300,
+    "vatInCents": 22,
+    "currency": "EUR",
+    "referenceId": "ref123"
+  },
+  "products": [
+    {
+      "id": "bbc123456",
+      "quantity": 1,
+      "title": "Black bling cap",
+      "description": "Flashy fine cap",
+      "imageUrl": "https://blingcaps.org/black_bling_cap.png",
+      "category": "Caps and hats",
+      "priceInCentsIncVat": 122,
+      "priceInCentsExcVat": 100,
+      "vatInCents": 22,
+      "vatPercentage": 22,
+      "extraData": "color=blue&size=M"
+    },
+    {
+      "id": "pbc123456",
+      "quantity": 1,
+      "title": "Pink bling cap",
+      "description": "Flashy fine cap",
+      "imageUrl": "https://blingcaps.org/pink_bling_cap.png",
+      "category": "Caps and hats",
+      "priceInCentsIncVat": 222,
+      "priceInCentsExcVat": 200,
+      "vatInCents": 22,
+      "vatPercentage": 22,
+      "extraData": "color=blue&size=M"
+    }
+  ],
+  "shippingAddress": {
+    "recipientName": "John Doe",
+    "co": "Jane Doe",
+    "streetAddress": "Calle Andalucia 32",
+    "streetAddress2": "Los Boliches",
+    "postalCode": 29640,
+    "city": "Fuengirola",
+    "stateOrProvince": "Malaga",
+    "country": "Spain"
+  },
+  "consumer": {
+    "consumerId": "diiba69",
+    "email": "diiba69@example.com",
+    "locale": "CN"
+  }
+}

@@ -210,10 +210,18 @@ module.exports = function PayapiApiClient(config) {
     return helpers.generateToken(secureformData, config.apiKey);
   }
 
-  async function getSecureformUrl(publicId) {
+  function getSecureformUrl(publicId) {
     inputDataValidator.validatePublicId(publicId);
 
     return apiUrl + '/v1/secureform/' + publicId;
+  }
+
+  function decodeMerchantCallback(dataToken) {
+    if (!dataToken || !validator.isJWT(dataToken)) {
+      throw new Error('Validation: input must be a valid JWT token');
+    }
+
+    return helpers.decodeToken(dataToken, config.apiKey);
   }
 
   return {
@@ -229,6 +237,7 @@ module.exports = function PayapiApiClient(config) {
     createStandardInvoice,
     updateInvoice,
     createSecureformDataToken,
-    getSecureformUrl
+    getSecureformUrl,
+    decodeMerchantCallback
   };
 };

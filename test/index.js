@@ -13,6 +13,7 @@ const helpers = require('../lib/helpers');
 const PayapiApiClient = require('../index');
 const invoiceData = require('../data/invoice.json');
 const secureformData = require('../data/secureform.json');
+const merchantCallback = require('../data/successful-callback.json');
 
 const constructorParams = {
   secret: 'test-secret',
@@ -379,6 +380,24 @@ describe('PayapiApiClient', function() {
 
       expect(() => payapiApiClient.createSecureformDataToken(secureform))
         .to.throw(Error, /Validation: products must be an array with at least one product item/);
+    });
+  });
+
+  describe('Decode merchant callback token', () => {
+    let payapiApiClient, secureform;
+
+    it('Should decode merchant callback token', () => {
+      const token = helpers.generateToken(merchantCallback, params.apiKey);
+      const data = new PayapiApiClient(params).decodeMerchantCallback(token);
+
+      expect(data).to.be.deep.equal(merchantCallback);
+    });
+
+    it('Should fail if invalid token is sent', () => {
+      const token = 'wrongtoken';
+
+      expect(() => new PayapiApiClient(params).decodeMerchantCallback(token))
+        .to.throw(Error, /Validation: input must be a valid JWT token/);
     });
   });
 
