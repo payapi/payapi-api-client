@@ -220,8 +220,19 @@ module.exports = function PayapiApiClient(config) {
     if (!dataToken || !validator.isJWT(dataToken)) {
       throw new Error('Validation: input must be a valid JWT token');
     }
+    const decodedToken = helpers.decodeToken(dataToken, config.apiKey);
+     // Required for PA callbacks
+    const data = JSON.parse(JSON.stringify(decodedToken));
 
-    return helpers.decodeToken(dataToken, config.apiKey);
+    return data;
+  }
+
+  function encodeMerchantCallback(payload) {
+    if (!payload || typeof (payload) !== 'object') {
+      throw new Error('Validation: payload must be an object');
+    }
+
+    return  helpers.generateToken(payload, config.apiKey);
   }
 
   return {
@@ -238,6 +249,7 @@ module.exports = function PayapiApiClient(config) {
     updateInvoice,
     createSecureformDataToken,
     getSecureformUrl,
-    decodeMerchantCallback
+    decodeMerchantCallback,
+    encodeMerchantCallback
   };
 };

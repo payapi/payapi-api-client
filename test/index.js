@@ -401,4 +401,21 @@ describe('PayapiApiClient', function() {
     });
   });
 
+  describe('Encode merchant callback token', () => {
+    let payapiApiClient, secureform;
+
+    it('Should encode merchant callback token', () => {
+      const dataToken = new PayapiApiClient(params).encodeMerchantCallback(merchantCallback);
+
+      expect(validator.isJWT(dataToken)).to.be.equal(true);
+    });
+
+    it('Should fail if payload is not an object', () => {
+      const payload = 'wrongpayload';
+
+      expect(() => new PayapiApiClient(params).encodeMerchantCallback(payload))
+        .to.throw(Error, /Validation: payload must be an object/);
+    });
+  });
+
 });
