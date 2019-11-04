@@ -387,7 +387,7 @@ describe('PayapiApiClient', function() {
     let payapiApiClient, secureform;
 
     it('Should decode merchant callback token', () => {
-      const token = helpers.generateToken(merchantCallback, params.apiKey);
+      const token = helpers.generateToken(JSON.stringify(merchantCallback), params.apiKey);
       const data = new PayapiApiClient(params).decodeMerchantCallback(token);
 
       expect(data).to.be.deep.equal(merchantCallback);
@@ -405,16 +405,16 @@ describe('PayapiApiClient', function() {
     let payapiApiClient, secureform;
 
     it('Should encode merchant callback token', () => {
-      const dataToken = new PayapiApiClient(params).encodeMerchantCallback(merchantCallback);
+      const dataToken = new PayapiApiClient(params).encodeMerchantCallback(JSON.stringify(merchantCallback));
 
       expect(validator.isJWT(dataToken)).to.be.equal(true);
     });
 
     it('Should fail if payload is not an object', () => {
-      const payload = 'wrongpayload';
+      const payload = { wrong: 'payload' };
 
       expect(() => new PayapiApiClient(params).encodeMerchantCallback(payload))
-        .to.throw(Error, /Validation: payload must be an object/);
+        .to.throw(Error, /Validation: payload must be a JSON stringified object/);
     });
   });
 

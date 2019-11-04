@@ -228,8 +228,8 @@ module.exports = function PayapiApiClient(config) {
   }
 
   function encodeMerchantCallback(payload) {
-    if (!payload || typeof (payload) !== 'object') {
-      throw new Error('Validation: payload must be an object');
+    if (!payload || typeof (payload) !== 'string') {
+      throw new Error('Validation: payload must be a JSON stringified object');
     }
 
     return  helpers.generateToken(payload, config.apiKey);
