@@ -222,7 +222,7 @@ module.exports = function PayapiApiClient(config) {
     }
     const decodedToken = helpers.decodeToken(dataToken, config.apiKey);
      // Required for PA callbacks
-    const data = JSON.parse(JSON.stringify(decodedToken));
+    const data = JSON.parse(decodedToken);
 
     return data;
   }
