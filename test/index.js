@@ -32,8 +32,10 @@ function validateInvoiceData(originalData, result) {
     }
   }
 
-  for (let [key, value] of Object.entries(originalData.invoicingClient)) {
-    expect(result.invoicingClient).to.have.property(key, originalData.invoicingClient[key]);
+  if (originalData.invoicingClient) {
+    for (let [key, value] of Object.entries(originalData.invoicingClient)) {
+      expect(result.invoicingClient).to.have.property(key, originalData.invoicingClient[key]);
+    }
   }
 }
 
@@ -335,6 +337,50 @@ describe('PayapiApiClient', function() {
       sinon.stub(axios, 'put').returns({ status: 404, message: errMessage });
 
       expect(payapiApiClient.updateInvoice('12345678', invoice, invoicingClient))
+        .to.be.rejectedWith(Error, errMessage);
+
+    });
+  });
+
+  describe('Cancel invoice', () => {
+    let payapiApiClient;
+    let updatedInvoiceData = { ...invoiceData };
+    updatedInvoiceData.invoiceTermsOfPayment = 'Cancel invoice terms of payment';
+    let invoice = { ...updatedInvoiceData };
+    delete invoice.invoicingClient;
+
+    before(async function() {
+      sinon.stub(axios, 'post').returns({ status: 200, data: { token: authToken } });
+      payapiApiClient = new PayapiApiClient(params);
+      await payapiApiClient.authenticate();
+    });
+
+    beforeEach(() => {
+      sinon.restore();
+    })
+
+    it('Should cancel an invoice and return updated data', async () => {
+      console.log('FRAN --- 0');
+      delete updatedInvoiceData.invoicingClient;
+      sinon.stub(axios, 'post').returns({ status: 200, data: updatedInvoiceData });
+      const result = await payapiApiClient.cancelInvoice(invoiceData.invoiceId);
+
+      expect(result).to.have.property('invoice');
+      console.log('FRAN --- ');
+      console.log(result.invoiceStatus);
+      validateInvoiceData(updatedInvoiceData, result);
+    });
+
+    it('Should fail if invoiceId is empty', async () => {
+      await expect(payapiApiClient.cancelInvoice(null))
+        .to.be.rejectedWith(Error, /Validation: invoiceId is not valid/);
+    });
+
+    it('Should capture not found errors', () => {
+      let errMessage = 'Resource not found';
+      sinon.stub(axios, 'put').returns({ status: 404, message: errMessage });
+
+      expect(payapiApiClient.cancelInvoice('12345678'))
         .to.be.rejectedWith(Error, errMessage);
 
     });

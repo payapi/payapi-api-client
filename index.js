@@ -195,6 +195,25 @@ module.exports = function PayapiApiClient(config) {
     };
   }
 
+  async function cancelInvoice(invoiceId) {
+    helpers.checkAuthentication(config);
+    if (!invoiceId) {
+      throw new Error('Validation: invoiceId is not valid');
+    }
+
+    const url = apiUrl + '/v1/api/authorized/invoices/cancel/' + invoiceId;
+    const options = { ...axiosOptions };
+    options.headers = { 'Authorization': 'Bearer ' + config.authenticationToken };
+
+    const invoiceDataToken = helpers.generateToken({}, config.apiKey);
+    const response = await axios.post(url, {data: invoiceDataToken}, options);
+    const format = helpers.formatAxiosResponse(response);
+
+    return {
+      invoice: format
+    };
+  }
+
   function createSecureformDataToken(data) {
     inputDataValidator.validateSecureformData(data);
 
@@ -247,6 +266,7 @@ module.exports = function PayapiApiClient(config) {
     createInvoice,
     createStandardInvoice,
     updateInvoice,
+    cancelInvoice,
     createSecureformDataToken,
     getSecureformUrl,
     decodeMerchantCallback,
